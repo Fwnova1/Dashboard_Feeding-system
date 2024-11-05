@@ -188,98 +188,61 @@ function exportReport() {
     doc.save('Patient_Report.pdf');
   }
 
-function uploadCSV() {
-    const fileInput = document.getElementById('csvFileInput');
-    const file = fileInput.files[0];
-    
-    if (!file) {
-        alert('Please upload a CSV file.');
-        return;
-    }
+  function handleCsvUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
 
     const reader = new FileReader();
-    
-    reader.onload = function(event) {
-        const csvData = event.target.result;
-        const rows = csvData.split('\n').map(row => row.split(','));
+    reader.onload = function(e) {
+        const contents = e.target.result;
+        const rows = contents.split('\n').map(row => row.split(','));
 
-        // Assuming the first row is the header
-        const hasHeader = rows[0][0].toLowerCase().includes("encounter");
-        const dataRows = hasHeader ? rows.slice(1) : rows;
+        // Clear existing table rows, except for the header
+        const tableBody = document.getElementById('patientTableBody');
+        tableBody.innerHTML = '';
 
-        dataRows.forEach((rowData, index) => {
-            // Map each CSV column to the correct variable based on the format provided
-            const [encounterId, endTidalCo2, feedVol, feedVolAdm, fio2, fio2Ratio, inspTime, oxygenFlowRate, peep, pip, respRate, sip, tidalVol, tidalVolActual, tidalVolKg, tidalVolSpon, bmi, referral] = rowData;
+        // Populate table with CSV data (assuming CSV headers match table structure)
+        rows.slice(1).forEach((row, index) => {
+            if (row.length < 5) return; // Skip incomplete rows
 
-            // Define patient details object
-            const patientDetails = {
-                encounterId,
-                endTidalCo2,
-                feedVol,
-                feedVolAdm,
-                fio2,
-                fio2Ratio,
-                inspTime,
-                oxygenFlowRate,
-                peep,
-                pip,
-                respRate,
-                sip,
-                tidalVol,
-                tidalVolActual,
-                tidalVolKg,
-                tidalVolSpon,
-                bmi,
-                referral
-            };
-
-            // Add row to table
-            addRowToTable(patientDetails);
+            // Create a new row for each patient entry
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${row[0]}</td>  <!-- Encounter ID -->
+                <td>${row[1]}</td>  <!-- Name -->
+                <td>${row[2]}</td>  <!-- Date of Birth -->
+                <td>${row[3]}</td>  <!-- Date of Admission -->
+                <td>${row[4]}</td>  <!-- Referral -->
+                <td>
+                    <button onclick="showDetails(this)" class="btn btn-info btn-sm">Details</button>
+                    <button onclick="toggleEdit(this)" class="btn btn-warning btn-sm">Edit</button>
+                    <button onclick="deleteRow(this)" class="btn btn-danger btn-sm">Delete</button>
+                </td>
+            `;
+            tableBody.appendChild(tr);
         });
-
-        alert('CSV data added successfully!');
-        fileInput.value = ''; // Reset the file input
     };
 
     reader.readAsText(file);
 }
 
-// Function to add a row to the table with patient details
-function addRowToTable(patientDetails) {
-    const tableBody = document.querySelector('table tbody');
-    const newRow = document.createElement('tr');
-    newRow.innerHTML = `
-        <th scope="row">${tableBody.rows.length + 1}</th>
-        <td>${patientDetails.encounterId}</td>
-        <td>${patientDetails.endTidalCo2}</td>
-        <td>${patientDetails.feedVol}</td>
-        <td>${patientDetails.feedVolAdm}</td>
-        <td>${patientDetails.fio2}</td>
-        <td>${patientDetails.fio2Ratio}</td>
-        <td>${patientDetails.inspTime}</td>
-        <td>${patientDetails.oxygenFlowRate}</td>
-        <td>${patientDetails.peep}</td>
-        <td>${patientDetails.pip}</td>
-        <td>${patientDetails.respRate}</td>
-        <td>${patientDetails.sip}</td>
-        <td>${patientDetails.tidalVol}</td>
-        <td>${patientDetails.tidalVolActual}</td>
-        <td>${patientDetails.tidalVolKg}</td>
-        <td>${patientDetails.tidalVolSpon}</td>
-        <td>${patientDetails.bmi}</td>
-        <td>${patientDetails.referral}</td>
-        <td>
-            <button 
-                onclick="showDetails(this)" 
-                class="btn btn-info btn-sm" 
-                data-patient-details='${JSON.stringify(patientDetails)}'>
-                Details
-            </button>
-            <button onclick="toggleEdit(this)" class="btn btn-warning btn-sm">Edit</button>
-            <button onclick="deleteRow(this)" class="btn btn-danger btn-sm">Delete</button>
-        </td>
-    `;
-
-    tableBody.appendChild(newRow);
+// Function to delete a row
+function deleteRow(button) {
+    const row = button.parentNode.parentNode;
+    row.parentNode.removeChild(row);
 }
 
+// Function to toggle edit mode (basic implementation)
+function toggleEdit(button) {
+    const row = button.parentNode.parentNode;
+    const cells = row.querySelectorAll('td');
+    cells.forEach(cell => {
+        if (cell.contentEditable === 'true') {
+            cell.contentEditable = 'false';
+            button.innerText = 'Edit';
+        } else {
+            cell.contentEditable = 'true';
+            button.innerText = 'Save';
+        }
+    });
+}
