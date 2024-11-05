@@ -93,3 +93,11 @@
     margin-left: -15rem;
   }
 }
+
+.search-bar {
+  width: 900px; /* Adjust width as needed */
+  display: none;
+}
+.search-icon-btn {
+  font-size: 1.1rem; /* Increase the font size */
+}

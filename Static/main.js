@@ -1,8 +1,12 @@
 function showDetails(button) {
     const row = button.closest('tr');
-
+    
     // Set values in the modal (these should correspond to each cell in the row based on your data structure)
     document.getElementById('detailEncounterId').innerText = row.cells[0].innerText;
+    document.getElementById('detailName').innerText = row.cells[1].innerText;
+    document.getElementById('detailDob').innerText = row.cells[2].innerText;
+    document.getElementById('detailDoa').innerText = row.cells[3].innerText;
+    document.getElementById('detailReferral').innerText = row.cells[4].innerText;
     document.getElementById('detailEndTidalCo2').innerText = "Placeholder";  // Replace with actual data
     document.getElementById('detailFeedVol').innerText = "Placeholder";      // Replace with actual data
     document.getElementById('detailFeedVolAdm').innerText = "Placeholder";   // Replace with actual data
@@ -23,6 +27,33 @@ function showDetails(button) {
     // Show the modal
     const detailsModal = new bootstrap.Modal(document.getElementById('detailsModal'));
     detailsModal.show();
+  }
+  function toggleSearchBar() {
+    const searchBar = document.getElementById('searchInput');
+    if (searchBar.style.display === 'none' || searchBar.style.display === '') {
+      searchBar.style.display = 'block'; // Show search bar
+      searchBar.focus(); // Optional: Focus on the search bar when it appears
+    } else {
+      searchBar.style.display = 'none'; // Hide search bar
+    }
+  }
+  
+  function searchPatient() {
+    // Get the value of the input field
+    const input = document.getElementById('searchInput').value.toLowerCase();
+    const tableBody = document.getElementById('patientTableBody');
+    const rows = tableBody.getElementsByTagName('tr');
+
+    // Loop through all rows and hide those that don't match the search query
+    for (let i = 0; i < rows.length; i++) {
+      const nameCell = rows[i].getElementsByTagName('td')[0]; // Corrected: Name is in the first <td> (index 0)
+      if (nameCell) {
+        const name = nameCell.textContent || nameCell.innerText;
+        rows[i].style.display = name.toLowerCase().includes(input) ? '' : 'none';
+      } else {
+        console.error(`Row ${i + 1} has no <td> elements`);
+      }
+    }
   }
 
   function toggleEdit(button) {
@@ -126,6 +157,37 @@ toggleButton.onclick = function () {
     el.classList.toggle("toggled");
 };
 
+function exportReport() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    doc.text("Patient Report", 10, 10);
+    doc.text(`Encounter ID: ${document.getElementById('detailEncounterId').innerText}`, 10, 20);
+    doc.text(`Name: ${document.getElementById('detailName').innerText}`, 10, 30);
+    doc.text(`Date of Birth: ${document.getElementById('detailDob').innerText}`, 10, 40);
+    doc.text(`Date of Admission: ${document.getElementById('detailDoa').innerText}`, 10, 50);
+    doc.text(`Referral: ${document.getElementById('detailReferral').innerText}`, 10, 60);
+
+    doc.text(`End Tidal CO2: ${document.getElementById('detailEndTidalCo2').innerText}`, 10, 70);
+    doc.text(`Feed Volume: ${document.getElementById('detailFeedVol').innerText}`, 10, 80);
+    doc.text(`Feed Volume Admin: ${document.getElementById('detailFeedVolAdm').innerText}`, 10, 90);
+    doc.text(`FiO2: ${document.getElementById('detailFiO2').innerText}`, 10, 100);
+    doc.text(`FiO2 Ratio: ${document.getElementById('detailFiO2Ratio').innerText}`, 10, 110);
+    doc.text(`Inspiratory Time: ${document.getElementById('detailInspTime').innerText}`, 10, 120);
+    doc.text(`Oxygen Flow Rate: ${document.getElementById('detailOxygenFlowRate').innerText}`, 10, 130);
+    doc.text(`PEEP: ${document.getElementById('detailPeep').innerText}`, 10, 140);
+    doc.text(`PIP: ${document.getElementById('detailPip').innerText}`, 10, 150);
+    doc.text(`Respiratory Rate: ${document.getElementById('detailRespRate').innerText}`, 10, 160);
+    doc.text(`SIP: ${document.getElementById('detailSip').innerText}`, 10, 170);
+    doc.text(`Tidal Volume: ${document.getElementById('detailTidalVol').innerText}`, 10, 180);
+    doc.text(`Tidal Volume Actual: ${document.getElementById('detailTidalVolActual').innerText}`, 10, 190);
+    doc.text(`Tidal Volume per Kg: ${document.getElementById('detailTidalVolKg').innerText}`, 10, 200);
+    doc.text(`Tidal Volume Spontaneous: ${document.getElementById('detailTidalVolSpon').innerText}`, 10, 210);
+    doc.text(`BMI: ${document.getElementById('detailBmi').innerText}`, 10, 220);
+
+    doc.save('Patient_Report.pdf');
+  }
+
 function uploadCSV() {
     const fileInput = document.getElementById('csvFileInput');
     const file = fileInput.files[0];
@@ -220,3 +282,4 @@ function addRowToTable(patientDetails) {
 
     tableBody.appendChild(newRow);
 }
+
